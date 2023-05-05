@@ -1,7 +1,7 @@
 import { reactive, type InjectionKey, type Ref, provide, inject } from 'vue'
 import { defineStore } from '../includes/functions'
 
-interface ReportData {
+export interface ReportData {
 	id: number
 	title: string
 	description: string

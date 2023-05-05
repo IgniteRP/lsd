@@ -77,6 +77,7 @@ const items = computed(() => {
 	aside {
 		@include flex(column);
 		width: 450px;
+		max-width: 30%;
 		height: 100%;
 		flex-shrink: 0;
 

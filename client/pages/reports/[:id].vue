@@ -16,16 +16,9 @@ const props = defineProps<{
 }>()
 
 const item = computed(() => {
-	return reports.items.get(parseInt(props.id))
+	const reportID = parseInt(props.id)
+	return reports.items.get(reportID) ?? null
 })
-
-function remove() {
-	if (!item.value) return
-	const id = item.value.id
-
-	reports.remove(id)
-	router.push('/reports')
-}
 </script>
 
 <template>
@@ -33,16 +26,17 @@ function remove() {
 		v-if="item"
 		class="reports-single-page"
 	>
-		<header>
-			<span class="created">{{ item.created }}</span>
-			<h1 class="title">{{ item.title }}</h1>
+		<ReportProvider :item="item">
+			<header>
+				<ReportID />
+				<ReportCreated />
+				<ReportTitle />
 
-			<ConstructButton @click="remove">Remove</ConstructButton>
-		</header>
+				<ReportActions @removed="router.push('/reports')" />
+			</header>
 
-		<div class="description">
-			{{ item.description }}
-		</div>
+			<ReportDescription />
+		</ReportProvider>
 	</ConstructPage>
 </template>
 
@@ -53,12 +47,40 @@ function remove() {
 	padding: 3em 10%;
 	padding-bottom: 25%;
 
-	header {
-		@include flex(column);
-		row-gap: 1em;
+	header,
+	.report-description {
+		width: 100%;
 	}
 
-	.description {
+	header {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		grid-template-rows: auto auto auto;
+		grid-template-areas:
+			'id created'
+			'title title'
+			'actions actions';
+		row-gap: 1em;
+
+		.report-id {
+			grid-area: id;
+		}
+
+		.report-created {
+			grid-area: created;
+		}
+
+		.report-title {
+			grid-area: title;
+			padding: 0px !important;
+		}
+
+		.report-actions {
+			grid-area: actions;
+		}
+	}
+
+	.report-description {
 		white-space: pre-wrap;
 		font-family: 'Share Tech Mono', monospace;
 	}

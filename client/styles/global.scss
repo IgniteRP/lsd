@@ -38,6 +38,10 @@
 		}
 	}
 
+	.construct-title {
+		padding: 0.5em 0px;
+	}
+
 	.construct-link {
 		&.router-link-active {
 			background-color: $color-green;

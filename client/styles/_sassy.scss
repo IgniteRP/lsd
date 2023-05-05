@@ -4,6 +4,7 @@ $line-width: 3px;
 $color-green: var(--color-green, #00f514);
 
 $text-color: var(--text-color, #00f514); // I like ffc368
+$bg-color: black;
 
 @mixin flex($direction: row, $justify: flex-start, $align: flex-start) {
 	display: flex;
