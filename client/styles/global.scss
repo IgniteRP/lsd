@@ -59,10 +59,10 @@
 			textarea,
 			select {
 				background-color: black;
-				border: 2px solid $color-green;
+				border: $line-width solid $color-green;
 				outline: none;
 				color: $text-color;
-				font-family: 'VT323', monospace;
+				font-family: 'Share Tech Mono', monospace;
 				font-size: 0.9em;
 				caret-shape: block;
 				border-radius: 0px;
@@ -74,11 +74,14 @@
 		border-radius: 0px;
 		background-color: black;
 		color: $text-color;
-		border: 2px solid $color-green;
+		border: $line-width solid $color-green;
+		font-family: 'Share Tech Mono', monospace;
 
-		&:hover {
+		&:hover,
+		&:focus {
 			background-color: $color-green;
 			color: black;
+			outline: none;
 		}
 	}
 }

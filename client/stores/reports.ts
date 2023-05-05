@@ -46,8 +46,14 @@ export const useReports = defineStore('reports', () => {
 		return items.get(id)!
 	}
 
+	function remove(id: number) {
+		items.delete(id)
+		saveState(items)
+	}
+
 	return {
 		items,
 		create,
+		remove,
 	}
 })

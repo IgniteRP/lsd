@@ -16,7 +16,6 @@ declare module '@vue/runtime-core' {
     ConstructMenu: typeof import('@sa-net/components')['ConstructMenu']
     ConstructPage: typeof import('@sa-net/components')['ConstructPage']
     ConstructTextArea: typeof import('@sa-net/components')['ConstructTextArea']
-    HelloWorld: typeof import('./../components/HelloWorld.vue')['default']
     LoadingScreen: typeof import('./../components/LoadingScreen.vue')['default']
     NavigationSidebar: typeof import('./../components/Navigation/Sidebar.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

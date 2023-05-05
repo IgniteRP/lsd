@@ -1,6 +1,7 @@
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { useGame } from './includes/useGame'
 
 export default defineComponent({
 	name: 'App',
@@ -9,11 +10,29 @@ export default defineComponent({
 
 <script setup lang="ts">
 const route = useRoute()
+const game = useGame()
+
+const open = ref(true)
+
+game.on('open', () => {
+	open.value = true
+})
+
+game.on('close', () => {
+	open.value = false
+})
+
+onMounted(() => game.emit('init'))
 </script>
 
 <template>
-	<NavigationSidebar v-if="!route.path.startsWith('/login')" />
-	<RouterView />
+	<ConstructLayout
+		class="main-layout"
+		:class="{ hide: !open }"
+	>
+		<NavigationSidebar v-if="!route.path.startsWith('/login')" />
+		<RouterView />
+	</ConstructLayout>
 </template>
 
 <style lang="scss">
@@ -235,23 +254,17 @@ body,
 	width: 100%;
 	height: 100%;
 	margin: 0px;
-	background-color: black;
-	color: $text-color;
-	font-family: CodePage437, monospace;
 }
 
-html {
+body {
 	padding: 0.5em;
-	overflow: hidden;
-	animation: textShadow 0.01s infinite;
-	line-height: 1.5em;
 }
 
 button {
 	animation: textShadow 0.01s infinite;
 }
 
-html::after {
+.main-layout::after {
 	content: ' ';
 	display: block;
 	position: absolute;
@@ -266,7 +279,7 @@ html::after {
 	animation: flicker 0.15s infinite;
 }
 
-html::before {
+.main-layout::before {
 	content: ' ';
 	display: block;
 	position: absolute;
@@ -286,14 +299,21 @@ html::before {
 	pointer-events: none;
 }
 
-body {
-	border: $line-width solid $color-green;
-}
-
-#app {
+.main-layout {
 	@include flex(row);
-	font-size: 1.5em;
+	// font-size: 1.5em;
 	letter-spacing: 0.2em;
+	background-color: #000;
+	color: $text-color;
+	font-family: 'Share Tech Mono', monospace;
+	border: $line-width solid $color-green;
+	overflow: hidden;
+	animation: textShadow 0.01s infinite;
+	line-height: 1.5em;
+
+	&.hide {
+		display: none;
+	}
 }
 
 h1,

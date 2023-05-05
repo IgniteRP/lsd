@@ -18,6 +18,8 @@ const routeKey = computed(() => {
 	if (typeof route.params.id === 'string') {
 		return route.params.id
 	}
+
+	return 'index'
 })
 
 const items = computed(() => {
@@ -73,15 +75,17 @@ const items = computed(() => {
 	@include flex(row);
 
 	aside {
-		width: 10%;
-		min-width: 400px;
+		@include flex(column);
+		width: 450px;
 		height: 100%;
+		flex-shrink: 0;
 
 		border-right: $line-width solid $color-green;
 
 		header {
 			@include flex(row, space-between, stretch);
 			border-bottom: $line-width solid $color-green;
+			width: 100%;
 
 			.construct-link,
 			h3 {
@@ -98,6 +102,7 @@ const items = computed(() => {
 
 		.search {
 			border-bottom: $line-width solid $color-green;
+			width: 100%;
 
 			:deep(input) {
 				border: none !important;
@@ -105,13 +110,20 @@ const items = computed(() => {
 		}
 
 		.items {
+			@include flex(column);
 			width: 100%;
 			flex: 1;
 
+			overflow: hidden;
+			overflow-y: auto;
+
 			.construct-link {
 				display: block;
-				padding: 0.5em 1em;
+				width: 100%;
+				padding: 0.75em 1em;
 				border-bottom: $line-width solid $color-green;
+				flex-shrink: 0;
+				border-right: $line-width solid $color-green;
 			}
 		}
 	}

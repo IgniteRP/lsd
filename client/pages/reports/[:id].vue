@@ -1,6 +1,7 @@
 <script lang="ts">
 import { useReports } from '@construct/client/stores/reports'
 import { computed, defineComponent } from 'vue'
+import { useRouter } from 'vue-router'
 
 export default defineComponent({
 	name: 'ReportsSinglePage',
@@ -8,6 +9,7 @@ export default defineComponent({
 </script>
 
 <script setup lang="ts">
+const router = useRouter()
 const reports = useReports()
 const props = defineProps<{
 	id: string
@@ -16,6 +18,14 @@ const props = defineProps<{
 const item = computed(() => {
 	return reports.items.get(parseInt(props.id))
 })
+
+function remove() {
+	if (!item.value) return
+	const id = item.value.id
+
+	reports.remove(id)
+	router.push('/reports')
+}
 </script>
 
 <template>
@@ -26,6 +36,8 @@ const item = computed(() => {
 		<header>
 			<span class="created">{{ item.created }}</span>
 			<h1 class="title">{{ item.title }}</h1>
+
+			<ConstructButton @click="remove">Remove</ConstructButton>
 		</header>
 
 		<div class="description">
@@ -43,6 +55,7 @@ const item = computed(() => {
 
 	header {
 		@include flex(column);
+		row-gap: 1em;
 	}
 
 	.description {
