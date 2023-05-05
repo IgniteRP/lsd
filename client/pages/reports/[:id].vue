@@ -44,8 +44,8 @@ const item = computed(() => {
 .reports-single-page {
 	@include flex(column);
 	row-gap: 1em;
-	padding: 3em 10%;
-	padding-bottom: 25%;
+	padding: 3em 8%;
+	padding-bottom: 40%;
 
 	header,
 	.report-description {
@@ -57,7 +57,7 @@ const item = computed(() => {
 		grid-template-columns: 1fr auto;
 		grid-template-rows: auto auto auto;
 		grid-template-areas:
-			'id created'
+			'created id'
 			'title title'
 			'actions actions';
 		row-gap: 1em;
