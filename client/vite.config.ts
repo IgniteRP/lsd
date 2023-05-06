@@ -3,6 +3,7 @@ import Pages from 'vite-plugin-pages'
 import Components from 'unplugin-vue-components/vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
+import Layouts from 'vite-plugin-vue-layouts'
 import { ConstructComponentResolver } from '@sa-net/components'
 
 // https://vitejs.dev/config/
@@ -16,6 +17,9 @@ export default defineConfig(env => {
 	const clientPort = Number(clientURL.port)
 
 	const serverURL = new URL(envars.SERVER_URL ?? 'http://localhost:3001')
+	const usersAPIURL = new URL(
+		envars.SERVER_USERS_API_URL ?? 'http://localhost:4001',
+	)
 
 	return {
 		envDir,
@@ -40,6 +44,14 @@ export default defineConfig(env => {
 			port: clientPort,
 
 			proxy: {
+				'/api/auth': {
+					target: usersAPIURL.origin,
+					changeOrigin: true,
+				},
+				'/api/users': {
+					target: usersAPIURL.origin,
+					changeOrigin: true,
+				},
 				'/api': {
 					target: serverURL.origin,
 					changeOrigin: true,
@@ -49,16 +61,20 @@ export default defineConfig(env => {
 
 		plugins: [
 			vue(),
+			Layouts({
+				layoutsDirs: 'layouts',
+				importMode: () => 'sync',
+			}),
+			Pages({
+				dirs: ['pages'],
+				importMode: 'sync',
+			}),
 			Components({
 				dirs: ['components'],
 				dts: 'types/components.d.ts',
 				deep: true,
 				directoryAsNamespace: true,
 				resolvers: [ConstructComponentResolver],
-			}),
-			Pages({
-				dirs: ['pages'],
-				importMode: 'sync',
 			}),
 		],
 	}

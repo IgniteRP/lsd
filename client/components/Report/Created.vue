@@ -21,6 +21,9 @@ const created = computed(() => {
 		year: 'numeric',
 		month: 'long',
 		day: 'numeric',
+		hour12: true,
+		hour: 'numeric',
+		minute: 'numeric',
 	})
 })
 </script>

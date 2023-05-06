@@ -2,6 +2,7 @@
 import { defineComponent, reactive } from 'vue'
 import { useRoute } from 'vue-router'
 import { useRouter } from 'vue-router'
+import { useAuth } from '../stores/auth'
 
 export default defineComponent({
 	name: 'LoginPage',
@@ -9,6 +10,7 @@ export default defineComponent({
 </script>
 
 <script setup lang="ts">
+const auth = useAuth()
 const router = useRouter()
 const route = useRoute()
 const creds = reactive({
@@ -16,9 +18,14 @@ const creds = reactive({
 	password: '',
 })
 
-function login() {
-	const redirect = route.query.redirect as string | undefined
-	router.push(redirect || '/')
+async function login() {
+	try {
+		await auth.login(creds)
+		const redirect = route.query.redirect as string | undefined
+		router.push(redirect || '/')
+	} catch (error) {
+		console.error(error)
+	}
 }
 </script>
 
@@ -61,3 +68,8 @@ function login() {
 	}
 }
 </style>
+
+<route lang="yaml">
+meta:
+  layout: no-layout
+</route>

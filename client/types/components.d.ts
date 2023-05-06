@@ -16,6 +16,7 @@ declare module '@vue/runtime-core' {
     ConstructLink: typeof import('@sa-net/components')['ConstructLink']
     ConstructMenu: typeof import('@sa-net/components')['ConstructMenu']
     ConstructPage: typeof import('@sa-net/components')['ConstructPage']
+    ConstructTabs: typeof import('@sa-net/components')['ConstructTabs']
     ConstructTextArea: typeof import('@sa-net/components')['ConstructTextArea']
     ConstructTitle: typeof import('@sa-net/components')['ConstructTitle']
     LoadingScreen: typeof import('./../components/LoadingScreen.vue')['default']
@@ -30,5 +31,6 @@ declare module '@vue/runtime-core' {
     ReportTitle: typeof import('./../components/Report/Title.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    TabView: typeof import('./../components/TabView.vue')['default']
   }
 }

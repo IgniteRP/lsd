@@ -37,7 +37,7 @@ function saveState(items: Map<number, ReportData>) {
 export const useReports = defineStore('reports', () => {
 	const items = reactive(loadState())
 
-	function create(data: Omit<ReportData, 'id'>): ReportData {
+	function create(data: Omit<ReportData, 'id' | 'created'>): ReportData {
 		const id = items.size + 1
 		const item = { ...data, id, created: new Date().toISOString() }
 

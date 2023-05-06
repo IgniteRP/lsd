@@ -7,6 +7,7 @@ import {
 } from 'vue-router'
 import generatedRoutes from 'virtual:generated-pages'
 import { isDefined } from '@michealpearce/utils'
+import { setupLayouts } from 'virtual:generated-layouts'
 
 declare module 'client/types' {
 	interface ClientContext {
@@ -27,7 +28,7 @@ declare module 'vue-router' {
 }
 
 export function setupRouter(context: ClientContext) {
-	const routes = setupRouteMeta(generatedRoutes)
+	const routes = setupRouteMeta(setupLayouts(generatedRoutes))
 	const router = createRouter({ routes, history: createWebHistory() })
 
 	router.beforeEach(async (to, from) => {

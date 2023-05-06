@@ -1,7 +1,8 @@
 <script lang="ts">
 import { computed, defineComponent, ref } from 'vue'
 import { useReports } from '../stores/reports'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { isString } from '@michealpearce/utils'
 
 export default defineComponent({
 	name: 'ReportsLayout',
@@ -9,10 +10,18 @@ export default defineComponent({
 </script>
 
 <script setup lang="ts">
+const router = useRouter()
 const route = useRoute()
 
 const reports = useReports()
-const search = ref('')
+const search = computed<string>({
+	get: () => (isString(route.query.search) ? route.query.search : ''),
+	set: value => {
+		if (value === '')
+			return router.push({ query: { ...route.query, search: undefined } })
+		router.push({ query: { ...route.query, search: value } })
+	},
+})
 
 const routeKey = computed(() => {
 	if (typeof route.params.id === 'string') {
