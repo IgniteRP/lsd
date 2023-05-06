@@ -6,7 +6,5 @@ export const isAuthed: MiddlewareHandler = function (to, _from, context) {
 
 	if (!auth.current && !to.path.startsWith('/login'))
 		// Redirect to login page
-		return {
-			path: `/login?redirect=${to.path}`,
-		}
+		return `/login?redirect=${to.fullPath}`
 }

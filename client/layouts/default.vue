@@ -1,8 +1,10 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { isAuthed } from '../middleware/isAuthed'
 
 export default defineComponent({
 	name: 'DefaultLayout',
+	middleware: [isAuthed],
 })
 </script>
 

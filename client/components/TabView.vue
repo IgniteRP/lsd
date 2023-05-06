@@ -1,5 +1,13 @@
 <script lang="ts">
-import { computed, defineComponent, reactive, ref, watch } from 'vue'
+import { attempt, isArray, isNumber } from '@michealpearce/utils'
+import {
+	computed,
+	defineComponent,
+	onBeforeMount,
+	reactive,
+	ref,
+	watch,
+} from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 export default defineComponent({
@@ -11,6 +19,8 @@ export default defineComponent({
 const router = useRouter()
 const route = useRoute()
 
+const tabsContainer = ref<HTMLElement | undefined>()
+
 const routeFullPath = computed(() => route.fullPath)
 
 const currentTab = ref(0)
@@ -21,7 +31,7 @@ function selectTab(tab: string, index: number) {
 	return router.push(tab)
 }
 
-function removeTab(tab: string, index: number) {
+function removeTab(index: number) {
 	if (tabs.length === 1) return router.push('/')
 
 	tabs.splice(index, 1)
@@ -33,25 +43,71 @@ function removeTab(tab: string, index: number) {
 }
 
 function createNewTab() {
-	const cur = tabs[currentTab.value]
-	currentTab.value = tabs.length
-	tabs.push(cur)
+	// push returns the new length of the array, minus 1 to get the index of the added item
+	currentTab.value = tabs.push('/') - 1
+	return router.push('/')
 }
 
-watch(
-	routeFullPath,
-	fullPath => {
-		tabs[currentTab.value] = fullPath
-	},
-	{ immediate: true },
-)
+// redirects vertical scrolling to horizontal scroll
+function onScroll(event: WheelEvent) {
+	if (!tabsContainer.value) return
+	tabsContainer.value.scrollLeft += event.deltaY
+}
+
+watch(currentTab, index => localStorage.setItem('currentTab', index.toString()))
+watch(tabs, updated => localStorage.setItem('tabs', JSON.stringify(updated)))
+watch(routeFullPath, fullPath => {
+	tabs[currentTab.value] = fullPath
+
+	// scroll to the selected tab if it's not in view
+	if (!tabsContainer.value) return
+	const tabsContainerEl = tabsContainer.value
+	const selected = tabsContainerEl.children.item(currentTab.value)
+
+	if (!selected) return
+	const tabsContainerRect = tabsContainerEl.getBoundingClientRect()
+	const selectedRect = selected.getBoundingClientRect()
+
+	if (selectedRect.right > tabsContainerRect.right)
+		tabsContainerEl.scrollTo({
+			left:
+				selectedRect.right -
+				tabsContainerRect.right +
+				tabsContainerEl.scrollLeft,
+		})
+	else if (selectedRect.left < tabsContainerRect.left)
+		tabsContainerEl.scrollTo({
+			left:
+				selectedRect.left - tabsContainerRect.left + tabsContainerEl.scrollLeft,
+		})
+})
+
+onBeforeMount(() => {
+	const savedCurrentTab = Number(localStorage.getItem('currentTab'))
+	const savedTabs = localStorage.getItem('tabs')
+
+	if (isNumber(savedCurrentTab)) currentTab.value = savedCurrentTab
+	if (savedTabs) {
+		const parsedTabs = attempt(() => JSON.parse(savedTabs) as string[])
+
+		if (isArray(parsedTabs)) tabs.push(...parsedTabs)
+		else {
+			console.warn('error parsing saved tabs', parsedTabs)
+			localStorage.removeItem('tabs')
+		}
+	}
+})
 </script>
 
 <template>
 	<div class="tab-view">
 		<slot :currentTab="currentTab" />
 
-		<div class="tabs">
+		<div
+			ref="tabsContainer"
+			class="tabs"
+			@wheel.passive="onScroll"
+		>
 			<ConstructButton
 				v-for="(tab, index) of tabs"
 				:key="index"
@@ -62,14 +118,19 @@ watch(
 				<span>{{ tab }}</span>
 
 				<ConstructButton
+					v-if="tabs.length > 1"
 					class="close"
-					@click.stop="removeTab(tab, index)"
+					@click.stop="removeTab(index)"
 				>
 					X
 				</ConstructButton>
 			</ConstructButton>
 
-			<ConstructButton @click="createNewTab">+</ConstructButton>
+			<ConstructButton
+				v-if="tabs.length < 10"
+				@click="createNewTab"
+				>+</ConstructButton
+			>
 		</div>
 	</div>
 </template>
@@ -79,6 +140,7 @@ watch(
 	@include flex(column);
 	width: 100%;
 	height: 100%;
+	overflow: hidden;
 
 	.tabs {
 		@include flex(row, flex-start, stretch);
