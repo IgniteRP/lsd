@@ -1,6 +1,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { isAuthed } from '../middleware/isAuthed'
+import { useRouter } from 'vue-router'
 
 export default defineComponent({
 	name: 'DefaultLayout',
@@ -8,15 +9,34 @@ export default defineComponent({
 })
 </script>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const router = useRouter()
+</script>
 
 <template>
 	<ConstructLayout class="default-layout">
 		<main>
 			<NavigationSidebar />
 
-			<TabView v-slot="{ currentTab }">
-				<RouterView :key="currentTab" />
+			<TabView v-slot="{ currentTab, tabs }">
+				<div class="inner">
+					<RouterView
+						v-for="(tab, index) of tabs"
+						:key="index"
+						:route="router.resolve(tab)"
+						v-slot="{ Component, route }"
+					>
+						<RouteProvider :route="route">
+							<KeepAlive include="ConstructPage,ConstructLayout">
+								<component
+									:is="Component"
+									class="tab"
+									:class="{ hide: currentTab !== index }"
+								/>
+							</KeepAlive>
+						</RouteProvider>
+					</RouterView>
+				</div>
 			</TabView>
 		</main>
 	</ConstructLayout>
@@ -45,14 +65,23 @@ export default defineComponent({
 	animation: textShadow 0.01s infinite;
 	line-height: 1.5em;
 
-	.inner {
-		@include flex(column);
-		width: 100%;
-		height: 100%;
-		overflow: hidden;
+	.tab-view {
+		.inner {
+			width: 100%;
+			height: 100%;
+			position: relative;
 
-		.tab {
-			flex: 1;
+			.tab {
+				position: absolute !important;
+				left: 0px;
+				top: 0px;
+
+				&.hide {
+					opacity: 0;
+					visibility: hidden;
+					pointer-events: none;
+				}
+			}
 		}
 	}
 }

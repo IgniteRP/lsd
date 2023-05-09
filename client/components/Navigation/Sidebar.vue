@@ -1,12 +1,15 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { useRouter } from 'vue-router'
 
 export default defineComponent({
 	name: 'NavigationSidebar',
 })
 </script>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const router = useRouter()
+</script>
 
 <template>
 	<nav class="navigation-sidebar">
@@ -34,6 +37,11 @@ export default defineComponent({
 				},
 			]"
 		/>
+
+		<div class="directions">
+			<ConstructButton @click="router.back()">&lt;</ConstructButton>
+			<ConstructButton @click="router.forward()">&gt;</ConstructButton>
+		</div>
 	</nav>
 </template>
 
@@ -45,6 +53,7 @@ export default defineComponent({
 }
 
 .navigation-sidebar {
+	@include flex(column);
 	width: 10%;
 	min-width: 200px;
 	height: 100%;
@@ -58,6 +67,22 @@ export default defineComponent({
 	.branding {
 		@include flex(column, center, center);
 		padding: 1em;
+	}
+
+	.construct-menu {
+		flex: 1;
+	}
+
+	.directions {
+		@include flex(row, stretch, center);
+		width: 100%;
+
+		.construct-button {
+			flex: 1;
+			height: 3.4em;
+			border: none !important;
+			border-top: $line-width solid $color-green !important;
+		}
 	}
 }
 </style>

@@ -1,31 +1,31 @@
 <script lang="ts">
-import { useReports } from '@construct/client/stores/reports'
+import { usePeople } from '@construct/client/stores/people'
 import { computed, defineComponent, useAttrs } from 'vue'
 
 export default defineComponent({
-	name: 'ReportsSinglePage',
+	name: 'PeopleSinglePage',
 	inheritAttrs: false,
 })
 </script>
 
 <script setup lang="ts">
 const attrs = useAttrs()
-const reports = useReports()
+const people = usePeople()
 const props = defineProps<{
 	id: string
 }>()
 
 const item = computed(() => {
-	const reportID = parseInt(props.id)
-	return reports.items.get(reportID) ?? null
+	const personID = parseInt(props.id)
+	return people.items.get(personID) ?? null
 })
 </script>
 
 <template>
-	<ReportProvider :item="item">
+	<PersonProvider :item="item">
 		<RouterView
 			:key="props.id"
 			v-bind="attrs"
 		/>
-	</ReportProvider>
+	</PersonProvider>
 </template>

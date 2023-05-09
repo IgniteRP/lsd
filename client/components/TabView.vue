@@ -43,9 +43,8 @@ function removeTab(index: number) {
 }
 
 function createNewTab() {
-	// push returns the new length of the array, minus 1 to get the index of the added item
-	currentTab.value = tabs.push('/') - 1
-	return router.push('/')
+	const cur = tabs[currentTab.value]
+	currentTab.value = tabs.push(cur) - 1
 }
 
 // redirects vertical scrolling to horizontal scroll
@@ -101,7 +100,10 @@ onBeforeMount(() => {
 
 <template>
 	<div class="tab-view">
-		<slot :currentTab="currentTab" />
+		<slot
+			:currentTab="currentTab"
+			:tabs="tabs"
+		/>
 
 		<div
 			ref="tabsContainer"
@@ -129,8 +131,9 @@ onBeforeMount(() => {
 			<ConstructButton
 				v-if="tabs.length < 10"
 				@click="createNewTab"
-				>+</ConstructButton
 			>
+				+
+			</ConstructButton>
 		</div>
 	</div>
 </template>
@@ -155,8 +158,9 @@ onBeforeMount(() => {
 			border: none !important;
 			border-right: $line-width solid $color-green !important;
 			border-bottom: $line-width solid $color-green !important;
-			padding: 1em 2em;
+			padding: 0 2em;
 			font-size: 0.9em;
+			height: 3em;
 
 			span {
 				max-width: 150px;
