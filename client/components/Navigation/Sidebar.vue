@@ -82,6 +82,10 @@ const router = useRouter()
 			height: 3.4em;
 			border: none !important;
 			border-top: $line-width solid $color-green !important;
+
+			&:first-child {
+				border-right: $line-width solid $color-green !important;
+			}
 		}
 	}
 }
