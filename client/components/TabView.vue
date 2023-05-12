@@ -85,7 +85,6 @@ onBeforeMount(() => {
 	const savedCurrentTab = Number(localStorage.getItem('currentTab'))
 	const savedTabs = localStorage.getItem('tabs')
 
-	if (isNumber(savedCurrentTab)) currentTab.value = savedCurrentTab
 	if (savedTabs) {
 		const parsedTabs = attempt(() => JSON.parse(savedTabs) as string[])
 
@@ -94,6 +93,11 @@ onBeforeMount(() => {
 			console.warn('error parsing saved tabs', parsedTabs)
 			localStorage.removeItem('tabs')
 		}
+	}
+
+	if (isNumber(savedCurrentTab)) {
+		currentTab.value = savedCurrentTab
+		if (tabs[savedCurrentTab]) router.push(tabs[savedCurrentTab])
 	}
 })
 </script>
