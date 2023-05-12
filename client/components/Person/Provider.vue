@@ -1,5 +1,5 @@
 <script lang="ts">
-import { providePerson, type PersonData } from '@construct/client/stores/people'
+import { providePerson, type PersonData } from 'client/stores/people'
 import { computed, defineComponent } from 'vue'
 
 export default defineComponent({

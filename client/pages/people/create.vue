@@ -1,5 +1,5 @@
 <script lang="ts">
-import { usePeople } from '@construct/client/stores/people'
+import { usePeople } from 'client/stores/people'
 import { defineComponent, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 

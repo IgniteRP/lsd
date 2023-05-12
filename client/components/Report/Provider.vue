@@ -1,8 +1,5 @@
 <script lang="ts">
-import {
-	provideReport,
-	type ReportData,
-} from '@construct/client/stores/reports'
+import { provideReport, type ReportData } from 'client/stores/reports'
 import { computed, defineComponent } from 'vue'
 
 export default defineComponent({

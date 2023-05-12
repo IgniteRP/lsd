@@ -1,5 +1,5 @@
 <script lang="ts">
-import { injectReport } from '@construct/client/stores/reports'
+import { injectReport } from 'client/stores/reports'
 import { ConstructLink } from '@sa-net/components'
 import { computed, defineComponent, h } from 'vue'
 

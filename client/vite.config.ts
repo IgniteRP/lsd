@@ -17,9 +17,6 @@ export default defineConfig(env => {
 	const clientPort = Number(clientURL.port)
 
 	const serverURL = new URL(envars.SERVER_URL ?? 'http://localhost:3001')
-	const usersAPIURL = new URL(
-		envars.SERVER_USERS_API_URL ?? 'http://localhost:4001',
-	)
 
 	return {
 		envDir,
@@ -27,7 +24,7 @@ export default defineConfig(env => {
 
 		resolve: {
 			alias: {
-				'@construct/client': resolve(__dirname),
+				client: resolve(__dirname),
 			},
 		},
 
@@ -44,14 +41,6 @@ export default defineConfig(env => {
 			port: clientPort,
 
 			proxy: {
-				'/api/auth': {
-					target: usersAPIURL.origin,
-					changeOrigin: true,
-				},
-				'/api/users': {
-					target: usersAPIURL.origin,
-					changeOrigin: true,
-				},
 				'/api': {
 					target: serverURL.origin,
 					changeOrigin: true,

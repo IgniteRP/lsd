@@ -1,5 +1,5 @@
 <script lang="ts">
-import { injectPerson } from '@construct/client/stores/people'
+import { injectPerson } from 'client/stores/people'
 import { computed, defineComponent } from 'vue'
 
 export default defineComponent({

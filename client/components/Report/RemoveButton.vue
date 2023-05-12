@@ -1,5 +1,5 @@
 <script lang="ts">
-import { injectReport, useReports } from '@construct/client/stores/reports'
+import { injectReport, useReports } from 'client/stores/reports'
 import { defineComponent, ref, useAttrs } from 'vue'
 
 export default defineComponent({

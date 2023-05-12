@@ -1,13 +1,15 @@
 import { defineConfig, loadEnv } from 'vite'
 import { resolve } from 'path'
 
-export default defineConfig({
-	envDir: '../',
-	envPrefix: ['SERVER_', 'CLIENT_'],
+export default defineConfig(() => {
+	return {
+		envDir: '../',
+		envPrefix: ['SERVER_', 'CLIENT_'],
 
-	resolve: {
-		alias: {
-			'@construct/server': resolve(__dirname),
+		resolve: {
+			alias: {
+				server: resolve(__dirname),
+			},
 		},
-	},
+	}
 })

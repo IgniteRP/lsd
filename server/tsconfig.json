@@ -14,13 +14,11 @@
 		"noEmit": true,
 
 		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true,
-
-		"importsNotUsedAsValues": "error",
+		"verbatimModuleSyntax": true,
 
 		"baseUrl": ".",
 		"paths": {
-			"@construct/server/*": ["./*"]
+			"server/*": ["./*"]
 		}
 	}
 }

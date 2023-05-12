@@ -19,7 +19,7 @@
 
 		"baseUrl": ".",
 		"paths": {
-			"@construct/client/*": ["./*"]
+			"client/*": ["./*"]
 		}
 	}
 }
