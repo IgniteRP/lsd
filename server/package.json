@@ -15,6 +15,9 @@
 		"vite": "^4.2.0"
 	},
 	"dependencies": {
+		"@fastify/cookie": "^8.3.0",
+		"@fastify/cors": "^8.2.1",
+		"@fastify/session": "^10.3.0",
 		"@michealpearce/classy-fastify": "^0.0.4",
 		"@michealpearce/typeorm-models": "^0.0.5",
 		"@michealpearce/utils": "^0.0.14",

@@ -63,11 +63,11 @@ export function parseWhereQuery(input: string): FindOptionsWhere<any> {
 }
 
 export function hashPassword(password: string) {
-	return hash(password, 10)
+	return hash(`${import.meta.env.SERVER_PASSWORD_SALT}${password}`, 10)
 }
 
 export function comparePassword(password: string, hash: string) {
-	return compare(password, hash)
+	return compare(`${import.meta.env.SERVER_PASSWORD_SALT}${password}`, hash)
 }
 
 export function generateAPIKey() {

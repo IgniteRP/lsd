@@ -1,4 +1,4 @@
-import { ModelUUID, ModelUUIDData } from '@michealpearce/typeorm-models'
+import { ModelID, ModelIDData } from '@michealpearce/typeorm-models'
 import {
 	Column,
 	Entity,
@@ -8,26 +8,20 @@ import {
 	Unique,
 } from 'typeorm'
 import { UserRole, type UserRoleData } from './UserRole'
-import { UserPermission, type UserPermissionData } from './UserPermission'
 import { UserMeta, type UserMetaData } from './UserMeta'
 
-export interface UserData extends ModelUUIDData {
+export interface UserData extends ModelIDData {
 	name: string
-	email: string
 	password?: string
 	roles: UserRoleData[]
-	permissions?: UserPermissionData[]
+	permissions: string[]
 	meta?: UserMetaData[]
 }
 
 @Entity()
-@Unique('name-email', ['name', 'email'])
-export class User extends ModelUUID<UserData> implements UserData {
+export class User extends ModelID<UserData> implements UserData {
 	@Column('varchar')
 	declare name: string
-
-	@Column('varchar')
-	declare email: string
 
 	@Column('varchar', { select: false })
 	declare password?: string
@@ -35,8 +29,8 @@ export class User extends ModelUUID<UserData> implements UserData {
 	@ManyToMany(() => UserRole, role => role.users, { eager: true })
 	declare roles: UserRole[]
 
-	@OneToMany(() => UserPermission, perm => perm.user, { cascade: true })
-	declare permissions?: UserPermission[]
+	@Column('simple-array', { default: '[]' })
+	declare permissions: string[]
 
 	@OneToMany(() => UserMeta, meta => meta.user, { cascade: true })
 	declare meta?: UserMeta[]

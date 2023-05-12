@@ -3,7 +3,7 @@ import { User, type UserData } from './User'
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 
 export interface UserMetaData extends ModelData {
-	userUUID: string
+	userID: number
 	name: string
 	value: string
 
@@ -12,8 +12,8 @@ export interface UserMetaData extends ModelData {
 
 @Entity()
 export class UserMeta extends Model<UserMetaData> implements UserMetaData {
-	@Column('varchar', { length: 225, primary: true })
-	declare userUUID: string
+	@Column('varchar', { primary: true })
+	declare userID: number
 
 	@Column('varchar', { length: 225, primary: true })
 	declare name: string
@@ -22,7 +22,7 @@ export class UserMeta extends Model<UserMetaData> implements UserMetaData {
 	declare value: string
 
 	@ManyToOne(() => User, user => user.meta, { onDelete: 'CASCADE' })
-	@JoinColumn({ name: 'userUUID' })
+	@JoinColumn({ name: 'userID' })
 	declare user?: User
 }
 

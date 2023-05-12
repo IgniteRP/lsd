@@ -44,7 +44,7 @@ const router = useRouter()
 
 <style lang="scss" scoped>
 .default-layout {
-	padding: 1%;
+	padding: 0.75em;
 	background-color: $bg-color;
 
 	&.hide {

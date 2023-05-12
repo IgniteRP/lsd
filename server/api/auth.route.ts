@@ -26,33 +26,29 @@ export class AuthLoginEndpoint extends Endpoint<{
 	body: LoginCreds
 }> {
 	async handle() {
+		console.log('hello')
 		this.console.info(this.request.body)
 		const { username, password } = this.request.body
 
 		const user = await User.findOne({
 			where: { name: username },
 			select: {
-				uuid: true,
+				id: true,
 				name: true,
 				password: true,
 			},
 		})
-		if (!user || !user.password)
+		if (!user || !user.password) {
+			this.console.info('Invalid username or password')
 			throw new ServerError('Invalid username or password', 401)
+		}
 
 		const valid = await comparePassword(password, user.password)
 		if (!valid) throw new ServerError('Invalid username or password', 401)
 
-		const expires = this.instance.siteOptions.get('sessionExpires') ?? 604800000 // 1 week
-		const session = await UserSession.init({
-			id: generateAPIKey(),
-			// 1 week
-			expires: Date.now() + expires,
-			userUUID: user.uuid,
-		}).save()
-		await session.reload()
-
-		return session
+		this.request.session.set('userID', user.id)
+		await this.request.session.save()
+		return await User.findOneByOrFail({ id: user.id })
 	}
 }
 
@@ -61,10 +57,7 @@ export class AuthLogoutEndpoint extends Endpoint {
 	static onRequest = [isAuthed]
 
 	async handle() {
-		const token = this.request.token
-		if (!token) throw new ServerError('No token provided', 400)
-
-		await UserSession.delete({ id: token })
+		await this.request.session.destroy()
 		return { success: true }
 	}
 }

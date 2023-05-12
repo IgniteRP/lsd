@@ -14,20 +14,14 @@ export async function setupAPI(context: ClientContext) {
 		baseURL: '/api',
 	}
 
-	const authID = localStorage.getItem('token')
-	if (authID)
-		config.headers = {
-			Authorization: `Bearer ${authID}`,
-		}
-
 	const api = axios.create(config)
 
 	context.api = api
 	context.app.provide('api', api)
 
-	if (authID) {
+	if (localStorage.getItem('userID')) {
 		const auth = useAuth(context)
-		await auth.fetch().catch(() => auth.clear())
+		await auth.fetch().catch(() => localStorage.removeItem('userID'))
 	}
 }
 

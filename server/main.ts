@@ -39,6 +39,14 @@ async function main() {
 		port: Number(serverURL.port),
 	})
 
+	console.log(
+		app.printRoutes({
+			commonPrefix: false,
+			includeHooks: true,
+			includeMeta: true,
+		}),
+	)
+
 	// Current implementation of construct cli does fully stop the process due to hmr being enabled so need to close the server manually on full reload
 	import.meta.hot?.on('vite:beforeFullReload', () => app.close())
 }

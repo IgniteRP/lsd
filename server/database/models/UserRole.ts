@@ -1,19 +1,17 @@
 import { Model, type ModelData } from '@michealpearce/typeorm-models'
 import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm'
 import { User, type UserData } from './User'
-import { UserPermission, type UserPermissionData } from './UserPermission'
-import { RolePermission } from './RolePermission'
 
 export interface UserRoleData extends ModelData {
 	name: string
 	displayName: string
 	users?: UserData[]
-	permissions?: UserPermissionData[]
+	permissions: string[]
 }
 
 @Entity()
 export class UserRole extends Model<UserRoleData> implements UserRoleData {
-	@Column('varchar', { unique: true, primary: true, length: 255 })
+	@Column('varchar', { primary: true, length: 255 })
 	declare name: string
 
 	@Column('varchar')
@@ -23,10 +21,8 @@ export class UserRole extends Model<UserRoleData> implements UserRoleData {
 	@JoinTable({ name: 'user_roles' })
 	declare users?: User[]
 
-	@OneToMany(() => RolePermission, permission => permission.role, {
-		cascade: true,
-	})
-	declare permissions?: UserPermission[]
+	@Column('simple-array', { default: '[]' })
+	declare permissions: string[]
 }
 
 export const model = UserRole

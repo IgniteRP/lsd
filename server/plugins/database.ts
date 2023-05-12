@@ -7,6 +7,8 @@ import { Option } from '../database/models/Option'
 import type { FastifyInstance } from 'fastify'
 import { baseRoles } from '../includes/baseRoles'
 import { UserRole } from '../database/models/UserRole'
+import { User } from 'server/database/models/User'
+import { hashPassword } from 'server/includes/functions'
 
 declare module 'fastify' {
 	interface FastifyInstance {
@@ -70,13 +72,39 @@ async function loadBaseRoles(instance: FastifyInstance) {
 	}
 }
 
+async function loadDEVUser(instance: FastifyInstance) {
+	if (import.meta.env.PROD) return
+
+	instance.log.info('Checking for dev user')
+	try {
+		const user = await User.findOneBy({ name: 'dev' })
+
+		if (!user) {
+			instance.log.info('Creating dev user')
+
+			await User.init({
+				name: 'dev',
+				password: await hashPassword('dev'),
+				roles: [
+					UserRole.init({
+						name: 'admin',
+					}),
+				],
+			}).save()
+		}
+	} catch (error) {
+		instance.log.error(error, 'Failed to check for dev user')
+		throw error
+	}
+}
+
 export const plugin = definePlugin(
 	async instance => {
 		const entities = getModels()
 		const entityNames = entities.map(entity => entity.name)
 
 		const source = new DataSource({
-			type: 'mysql',
+			type: 'mariadb',
 			host: import.meta.env.SERVER_DATABASE_HOST ?? 'localhost',
 			port: Number(import.meta.env.SERVER_DATABASE_PORT ?? 3306),
 			username: import.meta.env.SERVER_DATABASE_USER,
@@ -115,6 +143,8 @@ export const plugin = definePlugin(
 
 		instance.decorate('siteOptions', siteOptions)
 		instance.log.info({ siteOptions }, 'Site options loaded')
+
+		await loadDEVUser(instance)
 	},
 	{
 		global: true,

@@ -3,7 +3,6 @@ import { pick } from '@michealpearce/utils'
 import { User, type UserData } from '../database/models/User'
 import { ServerError } from '../includes/ServerError'
 import { parseListQuery } from '../includes/functions'
-import { UserPermission } from '../database/models/UserPermission'
 import { hasPermission } from '../middleware/hasPermission'
 import { UserRole } from '../database/models/UserRole'
 import { UserMeta } from '../database/models/UserMeta'
@@ -56,16 +55,20 @@ export class UsersCreateEndpoint extends Endpoint<{
 	}
 }
 
-@route.endpoint('GET', '/:uuid')
+@route.endpoint('GET', '/:id')
 export class UsersFetchEndpoint extends Endpoint<{
 	params: {
-		uuid: string
+		id: string
 	}
 }> {
+	get userID() {
+		return parseInt(this.params.id)
+	}
+
 	async handle() {
 		try {
 			const user = await User.findOneBy({
-				uuid: this.params.uuid,
+				id: this.userID,
 			})
 
 			if (!user) throw new ServerError('User not found', 404)
@@ -79,9 +82,9 @@ export class UsersFetchEndpoint extends Endpoint<{
 	}
 }
 
-@route.endpoint('POST', '/:uuid/roles/:name')
+@route.endpoint('POST', '/:id/roles/:name')
 export class UsersAddRoleEndpoint extends Endpoint<{
-	params: { uuid: string; name: string }
+	params: { id: string; name: string }
 }> {
 	static onRequest = [hasPermission('users.addRole')]
 
@@ -114,9 +117,9 @@ export class UsersAddRoleEndpoint extends Endpoint<{
 	}
 }
 
-@route.endpoint('DELETE', '/:uuid/roles/:name')
+@route.endpoint('DELETE', '/:id/roles/:name')
 export class UsersRemoveRoleEndpoint extends Endpoint<{
-	params: { uuid: string; name: string }
+	params: { id: string; name: string }
 }> {
 	static onRequest = [hasPermission('users.removeRole')]
 
@@ -149,23 +152,27 @@ export class UsersRemoveRoleEndpoint extends Endpoint<{
 	}
 }
 
-@route.endpoint('GET', '/:uuid/permissions')
+@route.endpoint('GET', '/:id/permissions')
 export class UsersFetchPermissionsEndpoint extends Endpoint<{
 	params: {
-		uuid: string
+		id: string
 	}
 }> {
+	get userID() {
+		return parseInt(this.params.id)
+	}
+
 	async handle() {
-		const { uuid } = this.params
+		const id = this.userID
 
 		try {
 			const user = await User.findOne({
-				where: { uuid },
+				where: { id },
 				relations: {
 					permissions: true,
 				},
 				select: {
-					uuid: true,
+					id: true,
 					permissions: true,
 				},
 			})
@@ -174,7 +181,7 @@ export class UsersFetchPermissionsEndpoint extends Endpoint<{
 			else if (!user.permissions)
 				throw new Error('user permissions relation not loaded')
 
-			return user.permissions.map(perm => perm.name)
+			return user.permissions
 		} catch (error) {
 			this.console.error(error, 'Failed to fetch user permissions')
 
@@ -184,25 +191,30 @@ export class UsersFetchPermissionsEndpoint extends Endpoint<{
 	}
 }
 
-@route.endpoint('GET', '/:uuid/permissions/:name')
+@route.endpoint('GET', '/:id/permissions/:name')
 export class UsersHasPermissionEndpoint extends Endpoint<{
 	params: {
-		uuid: string
+		id: string
 		name: string
 	}
 }> {
+	get userID() {
+		return parseInt(this.params.id)
+	}
+
 	async handle() {
-		const { uuid, name } = this.params
+		const id = this.userID
+		const { name } = this.params
 
 		try {
 			const user = await User.findOne({
-				where: { uuid },
+				where: { id },
 				relations: {
 					permissions: true,
 					roles: true,
 				},
 				select: {
-					uuid: true,
+					id: true,
 					permissions: true,
 					roles: true,
 				},
@@ -212,10 +224,7 @@ export class UsersHasPermissionEndpoint extends Endpoint<{
 			else if (!user.permissions)
 				throw new Error('user permissions relation not loaded')
 
-			const directlyHasPerm = user.permissions
-				.map(perm => perm.name)
-				.includes(name)
-
+			const directlyHasPerm = user.permissions.includes(name)
 			if (directlyHasPerm) return true
 
 			// check user roles
@@ -231,9 +240,7 @@ export class UsersHasPermissionEndpoint extends Endpoint<{
 					},
 				})
 
-				const roleHasPerm = role
-					.permissions!.map(perm => perm.name)
-					.includes(name)
+				const roleHasPerm = role.permissions.includes(name)
 				if (roleHasPerm) return true
 			}
 
@@ -247,26 +254,31 @@ export class UsersHasPermissionEndpoint extends Endpoint<{
 	}
 }
 
-@route.endpoint('POST', '/:uuid/permissions/:name')
+@route.endpoint('POST', '/:id/permissions/:name')
 export class UsersAddPermissionEndpoint extends Endpoint<{
 	params: {
-		uuid: string
+		id: string
 		name: string
 	}
 }> {
 	static onRequest = [hasPermission('users.addPermission')]
 
+	get userID() {
+		return parseInt(this.params.id)
+	}
+
 	async handle() {
-		const { uuid, name } = this.params
+		const id = this.userID
+		const { name } = this.params
 
 		try {
 			const user = await User.findOne({
-				where: { uuid },
+				where: { id },
 				relations: {
 					permissions: true,
 				},
 				select: {
-					uuid: true,
+					id: true,
 					permissions: true,
 				},
 			})
@@ -274,13 +286,13 @@ export class UsersAddPermissionEndpoint extends Endpoint<{
 			if (!user) throw new ServerError('User not found', 404)
 			else if (!user.permissions) user.permissions = []
 
-			const missingPerm = !user.permissions.find(perm => perm.name === name)
+			const missingPerm = !user.permissions.includes(name)
 			if (missingPerm) {
-				user.permissions.push(UserPermission.init({ name }))
+				user.permissions.push(name)
 				await user.save()
 			}
 
-			return user.permissions.map(perm => perm.name)
+			return user.permissions
 		} catch (error) {
 			this.console.error(error, 'Failed to add user permission')
 
@@ -290,26 +302,31 @@ export class UsersAddPermissionEndpoint extends Endpoint<{
 	}
 }
 
-@route.endpoint('DELETE', '/:uuid/permissions/:name')
+@route.endpoint('DELETE', '/:id/permissions/:name')
 export class UsersRemovePermissionEndpoint extends Endpoint<{
 	params: {
-		uuid: string
+		id: string
 		name: string
 	}
 }> {
 	static onRequest = [hasPermission('users.removePermission')]
 
+	get userID() {
+		return parseInt(this.params.id)
+	}
+
 	async handle() {
-		const { uuid, name } = this.params
+		const id = this.userID
+		const { name } = this.params
 
 		try {
 			const user = await User.findOne({
-				where: { uuid },
+				where: { id },
 				relations: {
 					permissions: true,
 				},
 				select: {
-					uuid: true,
+					id: true,
 					permissions: true,
 				},
 			})
@@ -317,13 +334,13 @@ export class UsersRemovePermissionEndpoint extends Endpoint<{
 			if (!user) throw new ServerError('User not found', 404)
 			else if (!user.permissions) user.permissions = []
 
-			const missingPerm = !user.permissions.find(perm => perm.name === name)
+			const missingPerm = !user.permissions.includes(name)
 			if (!missingPerm) {
-				user.permissions = user.permissions.filter(perm => perm.name !== name)
+				user.permissions = user.permissions.filter(perm => perm !== name)
 				await user.save()
 			}
 
-			return user.permissions.map(perm => perm.name)
+			return user.permissions
 		} catch (error) {
 			this.console.error(error, 'Failed to remove user permission')
 
@@ -333,17 +350,17 @@ export class UsersRemovePermissionEndpoint extends Endpoint<{
 	}
 }
 
-@route.endpoint('GET', '/:uuid/meta')
+@route.endpoint('GET', '/:id/meta')
 export class UsersListMetaEndpoint extends Endpoint<{
-	params: { uuid: string }
+	params: { id: string }
 	query: Record<string, string>
 }> {
 	async handle() {
-		const { uuid } = this.params
+		const { id } = this.params
 		const options = parseListQuery(this.query, 10000)
 
-		if (options.where) options.where.uuid = uuid
-		else options.where = { userUUID: uuid }
+		if (options.where) options.where.id = id
+		else options.where = { userID: id }
 
 		try {
 			const items = await UserMeta.find(options)
@@ -359,15 +376,19 @@ export class UsersListMetaEndpoint extends Endpoint<{
 	}
 }
 
-@route.endpoint('GET', '/:uuid/meta/:name')
+@route.endpoint('GET', '/:id/meta/:name')
 export class UsersGetMetaEndpoint extends Endpoint<{
-	params: { uuid: string; name: string }
+	params: { id: string; name: string }
 }> {
+	get userID() {
+		return parseInt(this.params.id)
+	}
+
 	async handle() {
-		const { uuid, name } = this.params
+		const { name } = this.params
 
 		try {
-			const meta = await UserMeta.findOneBy({ userUUID: uuid, name })
+			const meta = await UserMeta.findOneBy({ userID: this.userID, name })
 
 			if (!meta) throw new ServerError('Meta not found', 404)
 			return meta
@@ -380,20 +401,25 @@ export class UsersGetMetaEndpoint extends Endpoint<{
 	}
 }
 
-@route.endpoint('POST', '/:uuid/meta/:name')
+@route.endpoint('POST', '/:id/meta/:name')
 export class UsersSetMetaEndpoint extends Endpoint<{
-	params: { uuid: string; name: string }
+	params: { id: string; name: string }
 	body: { value: any }
 }> {
+	get userID() {
+		return parseInt(this.params.id)
+	}
+
 	async handle() {
 		const {
-			params: { uuid: userUUID, name },
+			userID,
+			params: { name },
 			body,
 		} = this
 		const value = body.value
 
 		try {
-			const meta = await UserMeta.init({ userUUID, name, value }).save()
+			const meta = await UserMeta.init({ userID, name, value }).save()
 			return meta
 		} catch (error) {
 			this.console.error(error, 'Failed to set user meta')
@@ -404,15 +430,22 @@ export class UsersSetMetaEndpoint extends Endpoint<{
 	}
 }
 
-@route.endpoint('DELETE', '/:uuid/meta/:name')
+@route.endpoint('DELETE', '/:id/meta/:name')
 export class UsersRemoveMetaEndpoint extends Endpoint<{
-	params: { uuid: string; name: string }
+	params: { id: string; name: string }
 }> {
+	get userID() {
+		return parseInt(this.params.id)
+	}
+
 	async handle() {
-		const { uuid, name } = this.params
+		const {
+			userID,
+			params: { name },
+		} = this
 
 		try {
-			const meta = await UserMeta.findOneBy({ userUUID: uuid, name })
+			const meta = await UserMeta.findOneBy({ userID, name })
 
 			if (!meta) throw new ServerError('Meta not found', 404)
 			await meta.remove()

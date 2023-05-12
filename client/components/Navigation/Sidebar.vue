@@ -54,8 +54,7 @@ const router = useRouter()
 
 .navigation-sidebar {
 	@include flex(column);
-	width: 10%;
-	min-width: 200px;
+	width: 200px;
 	height: 100%;
 	border-right: $line-width solid $color-green;
 

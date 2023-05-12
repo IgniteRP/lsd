@@ -5,7 +5,7 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 export interface UserSessionData extends ModelData {
 	id: string
 	expires: number
-	userUUID: string
+	userID: number
 	user: UserData
 }
 
@@ -21,7 +21,7 @@ export class UserSession
 	declare expires: number
 
 	@Column('varchar')
-	declare userUUID: string
+	declare userID: number
 
 	@ManyToOne(() => User, { onDelete: 'CASCADE', eager: true })
 	@JoinColumn({ name: 'userUUID' })
