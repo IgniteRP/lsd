@@ -17,27 +17,7 @@ const router = useRouter()
 	<ConstructLayout class="default-layout">
 		<main>
 			<NavigationSidebar />
-
-			<TabView v-slot="{ currentTab, tabs }">
-				<div class="inner">
-					<RouterView
-						v-for="(tab, index) of tabs"
-						:key="index"
-						:route="router.resolve(tab)"
-						v-slot="{ Component, route }"
-					>
-						<RouteProvider :route="route">
-							<KeepAlive include="ConstructPage,ConstructLayout">
-								<component
-									:is="Component"
-									class="tab"
-									:class="{ hide: currentTab !== index }"
-								/>
-							</KeepAlive>
-						</RouteProvider>
-					</RouterView>
-				</div>
-			</TabView>
+			<TabView />
 		</main>
 	</ConstructLayout>
 </template>
@@ -64,26 +44,6 @@ const router = useRouter()
 	overflow: hidden;
 	animation: textShadow 0.01s infinite;
 	line-height: 1.5em;
-
-	.tab-view {
-		.inner {
-			width: 100%;
-			height: 100%;
-			position: relative;
-
-			.tab {
-				position: absolute !important;
-				left: 0px;
-				top: 0px;
-
-				&.hide {
-					opacity: 0;
-					visibility: hidden;
-					pointer-events: none;
-				}
-			}
-		}
-	}
 }
 
 .default-layout main::after {

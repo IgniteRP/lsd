@@ -48,7 +48,12 @@ export class AuthLoginEndpoint extends Endpoint<{
 
 		this.request.session.set('userID', user.id)
 		await this.request.session.save()
-		return await User.findOneByOrFail({ id: user.id })
+		const fullUser = await User.findOneByOrFail({ id: user.id })
+
+		return {
+			sessionID: this.request.session.encryptedSessionId,
+			user: fullUser,
+		}
 	}
 }
 

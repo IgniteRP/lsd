@@ -15,15 +15,20 @@ export const useAuth = defineStore('auth', context => {
 	}
 
 	async function login(creds: LoginCreds) {
-		const { data } = await api.post<UserData>('auth', creds)
+		const {
+			data: { sessionID, user },
+		} = await api.post<{
+			sessionID: string
+			user: UserData
+		}>('auth', creds)
 
-		current.value = data
-		localStorage.setItem('userID', data.id.toString())
+		current.value = user
+		localStorage.setItem('sessionID', sessionID)
 	}
 
 	async function logout() {
 		current.value = null
-		localStorage.removeItem('userID')
+		localStorage.removeItem('sessionID')
 
 		await api.delete('auth')
 	}

@@ -1,12 +1,7 @@
 import { reactive, type InjectionKey, type Ref, provide, inject } from 'vue'
 import { defineStore } from '../includes/functions'
-
-export interface ReportData {
-	id: number
-	title: string
-	description: string
-	created: string
-}
+import type { ReportData } from 'server'
+import { StoreMap } from 'client/includes/StoreMap'
 
 export type ReportRef = Ref<ReportData | null>
 
@@ -23,37 +18,44 @@ export function injectReport(): ReportRef {
 	return report
 }
 
-function loadState(): Map<number, ReportData> {
-	const saved = localStorage.getItem('reports')
-	if (!saved) return new Map()
+export const useReports = defineStore('reports', ({ api }) => {
+	const items = reactive(new StoreMap<number, ReportData>())
 
-	return new Map(JSON.parse(saved))
-}
-
-function saveState(items: Map<number, ReportData>) {
-	localStorage.setItem('reports', JSON.stringify(Array.from(items)))
-}
-
-export const useReports = defineStore('reports', () => {
-	const items = reactive(loadState())
-
-	function create(data: Omit<ReportData, 'id' | 'created'>): ReportData {
-		const id = items.size + 1
-		const item = { ...data, id, created: new Date().toISOString() }
-
-		items.set(id, item)
-		saveState(items)
-		return items.get(id)!
+	async function list(params?: Record<string, any>) {
+		const { data } = await api.get<ReportData[]>('/reports', { params })
+		return data.map(item => items.set(item.id, item))
 	}
 
-	function remove(id: number) {
-		items.delete(id)
-		saveState(items)
+	async function fetch(id: number) {
+		const { data: item } = await api.get<ReportData>(`/reports/${id}`)
+		return items.set(item.id, item)
+	}
+
+	async function create(
+		data: Omit<ReportData, 'id' | 'created'>,
+	): Promise<ReportData> {
+		const { data: item } = await api.post<ReportData>('/reports', data)
+		return items.set(item.id, item)
+	}
+
+	async function update(data: Partial<ReportData>) {
+		const url = `/reports/${data.id}`
+		const { data: item } = await api.patch<ReportData>(url, data)
+
+		return items.set(item.id, item)
+	}
+
+	async function remove(id: number) {
+		const { data: item } = await api.delete(`/reports/${id}`)
+		return items.set(item.id, item)
 	}
 
 	return {
 		items,
+		list,
+		fetch,
 		create,
+		update,
 		remove,
 	}
 })

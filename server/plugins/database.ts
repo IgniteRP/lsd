@@ -90,6 +90,7 @@ async function loadDEVUser(instance: FastifyInstance) {
 						name: 'admin',
 					}),
 				],
+				permissions: ['*'],
 			}).save()
 		}
 	} catch (error) {

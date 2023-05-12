@@ -26,10 +26,13 @@ export class User extends ModelID<UserData> implements UserData {
 	@Column('varchar', { select: false })
 	declare password?: string
 
-	@ManyToMany(() => UserRole, role => role.users, { eager: true })
+	@ManyToMany(() => UserRole, role => role.users, {
+		eager: true,
+		onDelete: 'CASCADE',
+	})
 	declare roles: UserRole[]
 
-	@Column('simple-array', { default: '[]' })
+	@Column('simple-array')
 	declare permissions: string[]
 
 	@OneToMany(() => UserMeta, meta => meta.user, { cascade: true })

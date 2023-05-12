@@ -4,9 +4,9 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 
 export interface UserSessionData extends ModelData {
 	id: string
-	expires: number
-	userID: number
-	user: UserData
+	userID?: number
+	user?: UserData
+	data: any
 }
 
 @Entity()
@@ -17,15 +17,15 @@ export class UserSession
 	@Column('varchar', { primary: true, length: 255 })
 	declare id: string
 
-	@Column('bigint')
-	declare expires: number
-
 	@Column('varchar')
 	declare userID: number
 
-	@ManyToOne(() => User, { onDelete: 'CASCADE', eager: true })
-	@JoinColumn({ name: 'userUUID' })
-	declare user: User
+	@ManyToOne(() => User, { onDelete: 'CASCADE' })
+	@JoinColumn({ name: 'userID' })
+	declare user?: User
+
+	@Column('simple-json')
+	declare data: any
 }
 
 export const model = UserSession

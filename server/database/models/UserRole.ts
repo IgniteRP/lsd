@@ -17,11 +17,11 @@ export class UserRole extends Model<UserRoleData> implements UserRoleData {
 	@Column('varchar')
 	declare displayName: string
 
-	@ManyToMany(() => User, user => user.roles)
+	@ManyToMany(() => User, user => user.roles, { onDelete: 'CASCADE' })
 	@JoinTable({ name: 'user_roles' })
 	declare users?: User[]
 
-	@Column('simple-array', { default: '[]' })
+	@Column('simple-array')
 	declare permissions: string[]
 }
 

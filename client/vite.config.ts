@@ -43,7 +43,7 @@ export default defineConfig(env => {
 			proxy: {
 				'/api': {
 					target: serverURL.origin,
-					changeOrigin: true,
+					changeOrigin: false,
 				},
 			},
 		},

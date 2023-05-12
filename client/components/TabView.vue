@@ -100,10 +100,14 @@ onBeforeMount(() => {
 
 <template>
 	<div class="tab-view">
-		<slot
-			:currentTab="currentTab"
-			:tabs="tabs"
-		/>
+		<div class="windows">
+			<TabWindow
+				v-for="(tab, index) of tabs"
+				:key="index"
+				:path="tab"
+				:class="{ hide: index !== currentTab }"
+			/>
+		</div>
 
 		<div
 			ref="tabsContainer"
@@ -144,6 +148,12 @@ onBeforeMount(() => {
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
+
+	.windows {
+		width: 100%;
+		height: 100%;
+		position: relative;
+	}
 
 	.tabs {
 		@include flex(row, flex-start, stretch);

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, reactive } from 'vue'
+import { computed, defineComponent, onBeforeMount, reactive } from 'vue'
 import { useRoute } from 'vue-router'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../stores/auth'
@@ -18,15 +18,27 @@ const creds = reactive({
 	password: '',
 })
 
+const redirect = computed(() => route.query.redirect as string | undefined)
+
 async function login() {
 	try {
 		await auth.login(creds)
-		const redirect = route.query.redirect as string | undefined
-		router.push(redirect || '/')
+		router.push(redirect.value || '/')
 	} catch (error) {
 		console.error(error)
 	}
 }
+
+onBeforeMount(async () => {
+	const logout = route.query.logout as string | undefined
+	if (logout) {
+		await auth.logout()
+		window.location.href = '/login'
+		return
+	}
+
+	if (auth.current) return router.push(redirect.value || '/')
+})
 </script>
 
 <template>

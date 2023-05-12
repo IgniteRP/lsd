@@ -12,11 +12,14 @@ export function hasPermission(...permissions: string[]): onRequestHookHandler {
 
 		for (const perm of authed.permissions)
 			if (permissions.includes(perm)) foundPerms.add(perm)
-		if (foundPerms.size === permissions.length) return
+		if (foundPerms.size === permissions.length) {
+			console.log('found perms')
+			return
+		}
 
 		// check user roles
-		for (const { permissions } of authed.roles) {
-			for (const perm of permissions)
+		for (const { permissions: rolePerms } of authed.roles) {
+			for (const perm of rolePerms)
 				if (permissions.includes(perm)) foundPerms.add(perm)
 
 			if (foundPerms.size === permissions.length) return

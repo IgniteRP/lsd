@@ -16,8 +16,8 @@ const data = reactive({
 	description: '',
 })
 
-function create() {
-	const item = reports.create(data)
+async function create() {
+	const item = await reports.create(data)
 	router.push(`/reports/${item.id}`)
 }
 </script>

@@ -1,9 +1,10 @@
 <script lang="ts">
-import { computed, defineComponent, reactive } from 'vue'
+import { computed, defineComponent, onBeforeMount, reactive } from 'vue'
 import { useReports } from '../stores/reports'
 import { useRoute, useRouter } from 'vue-router'
 import { isString } from '@michealpearce/utils'
-import type { RouteLocationNormalizedLoaded } from 'vue-router'
+import type { ReportData } from 'server'
+import { useAsync } from 'client/includes/useAsync'
 
 export default defineComponent({
 	name: 'ReportsLayout',
@@ -25,22 +26,26 @@ const search = computed<string>({
 })
 
 const routeKey = computed(() => {
-	if (typeof route.params.id === 'string') {
-		return route.params.id
-	}
-
-	return 'index'
+	return route.path
 })
 
-const items = computed(() => {
-	return Array.from(reports.items)
-		.filter(([_, item]) => {
+const items: Set<ReportData> = reactive(new Set())
+const filteredItems = computed(() => {
+	return Array.from(items)
+		.filter(item => {
 			return item.title.toLowerCase().includes(search.value.toLowerCase())
 		})
 		.sort((a, b) => {
-			return a[1].created > b[1].created ? -1 : 1
+			return a.created > b.created ? -1 : 1
 		})
 })
+
+const fetch = useAsync(async () => {
+	const fetched = await reports.list()
+	for (const item of fetched) items.add(item)
+})
+
+onBeforeMount(fetch.trigger)
 </script>
 
 <template>
@@ -63,9 +68,9 @@ const items = computed(() => {
 
 			<div class="items">
 				<ConstructLink
-					v-for="[id, item] of items"
-					:key="id"
-					:to="`/reports/${id}`"
+					v-for="item of filteredItems"
+					:key="item.id"
+					:to="`/reports/${item.id}`"
 					class="item"
 				>
 					{{ item.title }}
