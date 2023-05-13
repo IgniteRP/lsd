@@ -49,7 +49,11 @@ export default defineConfig(env => {
 		},
 
 		plugins: [
-			vue(),
+			vue({
+				script: {
+					defineModel: true,
+				},
+			}),
 			Layouts({
 				layoutsDirs: 'layouts',
 				importMode: () => 'sync',
