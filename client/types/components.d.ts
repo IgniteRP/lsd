@@ -22,6 +22,7 @@ declare module '@vue/runtime-core' {
     copy: typeof import('./../components/Report/Provider copy.vue')['default']
     LoadingScreen: typeof import('./../components/LoadingScreen.vue')['default']
     NavigationSidebar: typeof import('./../components/Navigation/Sidebar.vue')['default']
+    PageQuerySidebar: typeof import('./../components/Page/QuerySidebar.vue')['default']
     PersonActions: typeof import('./../components/Person/Actions.vue')['default']
     PersonCreated: typeof import('./../components/Person/Created.vue')['default']
     PersonEditButton: typeof import('./../components/Person/EditButton.vue')['default']
