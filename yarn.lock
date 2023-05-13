@@ -406,16 +406,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sa-net/components@npm:^0.0.1":
-  version: 0.0.1
-  resolution: "@sa-net/components@npm:0.0.1"
+"@sa-net/components@npm:^0.0.2":
+  version: 0.0.2
+  resolution: "@sa-net/components@npm:0.0.2"
+  dependencies:
+    "@michealpearce/utils": ^0.0.14
   peerDependencies:
     vue: ^3
     vue-router: ^4
   peerDependenciesMeta:
     vue-router:
       optional: true
-  checksum: 9a573a26797f0ea0f71427b4af05fa2990debf46c04395cea8b8f9fbe47be761df60647b3f9668b6c96d21401b816138bb70fc265429f699cc48a817f3a1f266
+  checksum: a616d1187500ab2b1cedf4f636561a0860323e2e16d7bd709843ee5ed01474959d6e612b2b71285352c2f90eb56a2f4ddf1a81d5707739644edc08c5664c0d41
   languageName: node
   linkType: hard
 
@@ -1153,7 +1155,7 @@ __metadata:
   resolution: "client@workspace:client"
   dependencies:
     "@michealpearce/utils": ^0.0.14
-    "@sa-net/components": ^0.0.1
+    "@sa-net/components": ^0.0.2
     "@vitejs/plugin-vue": ^4.1.0
     axios: ^1.4.0
     sass: ^1.59.3

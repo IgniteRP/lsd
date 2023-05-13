@@ -1,10 +1,18 @@
 <script lang="ts">
-import { computed, defineComponent, onBeforeMount, reactive } from 'vue'
+import {
+	computed,
+	defineComponent,
+	onBeforeMount,
+	reactive,
+	ref,
+	watch,
+} from 'vue'
 import { useReports } from '../stores/reports'
 import { useRoute, useRouter } from 'vue-router'
 import { isString } from '@michealpearce/utils'
 import type { ReportData } from 'server'
 import { useAsync } from 'client/includes/useAsync'
+import { debounce } from 'client/includes/functions'
 
 export default defineComponent({
 	name: 'ReportsLayout',
@@ -16,6 +24,7 @@ const router = useRouter()
 const route = useRoute()
 
 const reports = useReports()
+
 const search = computed<string>({
 	get: () => (isString(route.query.search) ? route.query.search : ''),
 	set: value => {
@@ -25,27 +34,33 @@ const search = computed<string>({
 	},
 })
 
-const routeKey = computed(() => {
-	return route.path
-})
+const page = ref(0)
 
 const items: Set<ReportData> = reactive(new Set())
-const filteredItems = computed(() => {
-	return Array.from(items)
-		.filter(item => {
-			return item.title.toLowerCase().includes(search.value.toLowerCase())
+const fetch = useAsync(async () => {
+	page.value++
+
+	try {
+		const fetched = await reports.list({
+			page: page.value,
+			query: search.value,
 		})
-		.sort((a, b) => {
-			return a.created > b.created ? -1 : 1
-		})
+
+		for (const item of fetched) items.add(item)
+	} catch (error) {
+		page.value--
+		throw error
+	}
 })
 
-const fetch = useAsync(async () => {
-	const fetched = await reports.list()
-	for (const item of fetched) items.add(item)
-})
+const searchUpdated = debounce(() => {
+	page.value = 0
+	items.clear()
+	return fetch.trigger()
+}, 500)
 
 onBeforeMount(fetch.trigger)
+watch(search, searchUpdated)
 </script>
 
 <template>
@@ -54,7 +69,14 @@ onBeforeMount(fetch.trigger)
 			<header>
 				<h3>Reports</h3>
 
-				<ConstructLink to="/reports/create">Create</ConstructLink>
+				<ConstructLink
+					:to="{
+						path: '/reports/create',
+						query: route.query,
+					}"
+				>
+					Create
+				</ConstructLink>
 			</header>
 
 			<ConstructInput
@@ -62,15 +84,18 @@ onBeforeMount(fetch.trigger)
 				id="reports-search"
 				class="search"
 				:options="{
-					placeholder: 'Search...',
+					placeholder: 'Query...',
 				}"
 			/>
 
 			<div class="items">
 				<ConstructLink
-					v-for="item of filteredItems"
+					v-for="item of items"
 					:key="item.id"
-					:to="`/reports/${item.id}`"
+					:to="{
+						path: `/reports/${item.id}`,
+						query: route.query,
+					}"
 					class="item"
 				>
 					{{ item.title }}
@@ -79,7 +104,7 @@ onBeforeMount(fetch.trigger)
 		</aside>
 
 		<RouterView
-			:key="routeKey"
+			:key="route.path"
 			class="content"
 		/>
 	</ConstructLayout>

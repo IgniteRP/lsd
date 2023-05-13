@@ -10,11 +10,12 @@ export default defineComponent({
 
 <template>
 	<ConstructPage class="people-index-page">
-		<h1></h1>
+		<h1>Select a Person</h1>
 	</ConstructPage>
 </template>
 
 <style lang="scss" scoped>
 .people-index-page {
+	@include flex(column, center, center);
 }
 </style>

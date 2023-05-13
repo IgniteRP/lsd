@@ -14,16 +14,18 @@ const report = injectReport()
 function replaceLinks(input: any[]): any[] {
 	return input.map(line => {
 		if (!(typeof line === 'string')) return line
-		const match = line.match(/(?<link>\/(reports|people)\/\d*)/)
-		if (!match?.groups?.link) return line
+		const match = line.match(/(?<ns>(reports|people))#(?<id>\d*)/)
+		if (!match?.groups) return line
 
-		const { link } = match.groups
+		const { ns, id } = match.groups
+		if (!ns || !id) return line
+
 		return h(
 			ConstructLink,
 			{
-				to: link,
+				to: `/${ns}/${id}`,
 			},
-			{ default: () => link },
+			{ default: () => line },
 		)
 	})
 }

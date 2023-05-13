@@ -1,4 +1,5 @@
 import { Endpoint, defineRoute } from '@michealpearce/classy-fastify'
+import { pick } from '@michealpearce/utils'
 import { Report, type ReportData } from 'server/database/models/Report'
 import { ServerError } from 'server/includes/ServerError'
 import { parseListQuery } from 'server/includes/functions'
@@ -72,7 +73,10 @@ export class ReportsGetEndpoint extends Endpoint<{
 
 		try {
 			this.console.info({ reportID }, 'Getting report')
-			const item = await Report.findOneBy({ id: reportID })
+			const item = await Report.findOne({
+				where: { id: reportID },
+				withDeleted: true,
+			})
 
 			if (!item) throw new ServerError('Report not found', 404)
 			return item
@@ -81,6 +85,61 @@ export class ReportsGetEndpoint extends Endpoint<{
 
 			if (error instanceof ServerError) throw error
 			throw new ServerError('Failed to get report', 500)
+		}
+	}
+}
+
+@route.endpoint('PATCH', '/:id')
+export class ReportsUpdateEndpoint extends Endpoint<{
+	body: Partial<ReportData>
+	params: {
+		id: string
+	}
+}> {
+	static onRequest = [hasPermission('reports.update')]
+
+	async handle() {
+		const item = await new ReportsGetEndpoint(
+			this.instance,
+			this.request,
+			this.reply,
+		).handle()
+
+		const data = pick(this.body, ['title', 'description'])
+
+		try {
+			return await item.assign(data).save()
+		} catch (error) {
+			this.console.error(error, 'Failed to update report')
+
+			if (error instanceof ServerError) throw error
+			throw new ServerError('Failed to update report', 500)
+		}
+	}
+}
+
+@route.endpoint('DELETE', '/:id')
+export class ReportsDeleteEndpoint extends Endpoint<{
+	params: {
+		id: string
+	}
+}> {
+	static onRequest = [hasPermission('reports.delete')]
+
+	async handle() {
+		const item = await new ReportsGetEndpoint(
+			this.instance,
+			this.request,
+			this.reply,
+		).handle()
+
+		try {
+			return await item.softRemove()
+		} catch (error) {
+			this.console.error(error, 'Failed to delete report')
+
+			if (error instanceof ServerError) throw error
+			throw new ServerError('Failed to delete report', 500)
 		}
 	}
 }

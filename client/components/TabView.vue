@@ -20,7 +20,6 @@ const router = useRouter()
 const route = useRoute()
 
 const tabsContainer = ref<HTMLElement | undefined>()
-
 const routeFullPath = computed(() => route.fullPath)
 
 const currentTab = ref(0)

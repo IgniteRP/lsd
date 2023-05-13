@@ -15,8 +15,8 @@ const data = reactive({
 	name: '',
 })
 
-function create() {
-	const item = people.create(data)
+async function create() {
+	const item = await people.create(data)
 	router.push(`/people/${item.id}`)
 }
 </script>

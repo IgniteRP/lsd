@@ -10,7 +10,7 @@
 	},
 	"dependencies": {
 		"@michealpearce/utils": "^0.0.14",
-		"@sa-net/components": "^0.0.1",
+		"@sa-net/components": "^0.0.2",
 		"axios": "^1.4.0",
 		"vue": "^3.2.47",
 		"vue-router": "^4.1.6"

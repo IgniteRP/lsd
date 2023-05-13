@@ -27,6 +27,21 @@ export function parseListQuery(
 		skip,
 	}
 
+	if (isString(opts.query)) {
+		const q = opts.query as string
+		const orderRegex = / ?(\w+:(?:DESC|ASC|desc|asc)) ?/g
+		const whereRegex = / ?((?<prop>\w+)(?<like>~)?\[(?<value>[^\]]*)\]) ?/g
+
+		opts.order = Array.from(q.matchAll(orderRegex))
+			.map(match => match[1])
+			.filter(isString)
+			.join(',')
+		opts.where = Array.from(q.matchAll(whereRegex))
+			.map(match => match[1])
+			.filter(isString)
+			.join(',')
+	}
+
 	if (isString(opts.order)) options.order = parseOrderQuery(opts.order)
 	if (isString(opts.where)) options.where = parseWhereQuery(opts.where)
 
@@ -54,9 +69,15 @@ export function parseWhereQuery(input: string): FindOptionsWhere<any> {
 	const matches = Array.from(input.matchAll(regex))
 	return matches.reduce((acc, { groups }) => {
 		if (!groups) return acc
+		let value = groups.value as any
 
-		if (groups.like) acc[groups.prop] = Like(groups.value)
-		else acc[groups.prop] = groups.value
+		//check if value is a number
+		if (!isNaN(Number(value))) value = Number(value)
+
+		if (groups.like) {
+			if (isString(value) && value.includes('%')) acc[groups.prop] = Like(value)
+			else acc[groups.prop] = Like(`%${value}%`)
+		} else acc[groups.prop] = value
 
 		return acc
 	}, {} as Record<string, any>)

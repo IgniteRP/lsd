@@ -18,7 +18,7 @@ const router = useRouter()
 			<PersonCreated />
 			<PersonName />
 
-			<PersonActions @removed="router.push('/persons')" />
+			<PersonActions @removed="router.push('/people')" />
 		</header>
 	</ConstructPage>
 </template>

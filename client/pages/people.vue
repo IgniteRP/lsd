@@ -1,9 +1,18 @@
 <script lang="ts">
-import { computed, defineComponent, reactive } from 'vue'
+import {
+	computed,
+	defineComponent,
+	onBeforeMount,
+	reactive,
+	ref,
+	watch,
+} from 'vue'
 import { usePeople } from '../stores/people'
 import { useRoute, useRouter } from 'vue-router'
 import { isString } from '@michealpearce/utils'
-import type { RouteLocationNormalizedLoaded } from 'vue-router'
+import type { PersonData } from 'server'
+import { useAsync } from 'client/includes/useAsync'
+import { debounce } from 'client/includes/functions'
 
 export default defineComponent({
 	name: 'PeopleLayout',
@@ -24,23 +33,30 @@ const search = computed<string>({
 	},
 })
 
-const routeKey = computed(() => {
-	if (typeof route.params.id === 'string') {
-		return route.params.id
+const items: Set<PersonData> = reactive(new Set())
+const page = ref(0)
+
+const fetch = useAsync(async () => {
+	try {
+		const fetched = await people.list({
+			page: page.value,
+			query: search.value,
+		})
+
+		for (const item of fetched) items.add(item)
+	} catch (error) {
+		console.error(error)
 	}
-
-	return 'index'
 })
 
-const items = computed(() => {
-	return Array.from(people.items)
-		.filter(([_, item]) => {
-			return item.name.toLowerCase().includes(search.value.toLowerCase())
-		})
-		.sort((a, b) => {
-			return a[1].created > b[1].created ? -1 : 1
-		})
-})
+const searchUpdated = debounce(() => {
+	page.value = 0
+	items.clear()
+	return fetch.trigger()
+}, 500)
+
+onBeforeMount(fetch.trigger)
+watch(search, searchUpdated)
 </script>
 
 <template>
@@ -49,7 +65,14 @@ const items = computed(() => {
 			<header>
 				<h3>People</h3>
 
-				<ConstructLink to="/people/create">Create</ConstructLink>
+				<ConstructLink
+					:to="{
+						path: '/people/create',
+						query: route.query,
+					}"
+				>
+					Create
+				</ConstructLink>
 			</header>
 
 			<ConstructInput
@@ -57,15 +80,18 @@ const items = computed(() => {
 				id="people-search"
 				class="search"
 				:options="{
-					placeholder: 'Search...',
+					placeholder: 'Query...',
 				}"
 			/>
 
 			<div class="items">
 				<ConstructLink
-					v-for="[id, item] of items"
-					:key="id"
-					:to="`/people/${id}`"
+					v-for="item of items"
+					:key="item.id"
+					:to="{
+						path: `/people/${item.id}`,
+						query: route.query,
+					}"
 					class="item"
 				>
 					{{ item.name }}
@@ -74,7 +100,7 @@ const items = computed(() => {
 		</aside>
 
 		<RouterView
-			:key="routeKey"
+			:key="route.path"
 			class="content"
 		/>
 	</ConstructLayout>
@@ -86,8 +112,7 @@ const items = computed(() => {
 
 	aside {
 		@include flex(column);
-		width: 450px;
-		max-width: 30%;
+		width: 325px;
 		height: 100%;
 		flex-shrink: 0;
 
