@@ -48,11 +48,11 @@ export function parseListQuery(
 	return options
 }
 
-export function parseLimitQuery(limit: number, maxLimit = 100) {
+export function parseLimitQuery(limit: number = 10, maxLimit = 100) {
 	return Math.min(Math.max(limit, 1), maxLimit)
 }
 
-export function parsePageQuery(page: number, take: number) {
+export function parsePageQuery(page: number = 1, take: number) {
 	return (Math.max(page, 1) - 1) * take
 }
 

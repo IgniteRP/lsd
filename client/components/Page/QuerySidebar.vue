@@ -1,23 +1,46 @@
 <script lang="ts">
 import { isString } from '@michealpearce/utils'
-import { computed, defineComponent } from 'vue'
+import { ConstructScrollNotifier } from '@sa-net/components'
+import { debounce } from 'client/includes/functions'
+import { useAsync } from 'client/includes/useAsync'
+import {
+	computed,
+	defineComponent,
+	onBeforeMount,
+	reactive,
+	ref,
+	watch,
+} from 'vue'
 import { useRouter } from 'vue-router'
 import { useRoute } from 'vue-router'
 
+export interface PageQuerySidebarItem {
+	id: number
+	title: string
+}
+
+export interface PageQuerySidebarProps {
+	name: string
+	title: string
+	fetcher: (params: Record<any, any>) => Promise<PageQuerySidebarItem[]>
+}
+
 export default defineComponent({
 	name: 'PageQuerySidebar',
+	components: { ConstructScrollNotifier },
 })
 </script>
 
 <script setup lang="ts">
-const props = defineProps<{
-	name: string
-	title: string
-	items: Iterable<{ id: string; title: string }>
+const props = defineProps<PageQuerySidebarProps>()
+const emit = defineEmits<{
+	'next-page': []
 }>()
 
 const router = useRouter()
 const route = useRoute()
+
+const items: Set<PageQuerySidebarItem> = reactive(new Set())
 
 const search = computed<string>({
 	get: () => (isString(route.query.search) ? route.query.search : ''),
@@ -27,6 +50,51 @@ const search = computed<string>({
 		router.push({ query: { ...route.query, search: value } })
 	},
 })
+
+const page = ref(0)
+
+let errorTimeout: any = null
+const fetch = useAsync(async () => {
+	if (errorTimeout) return
+	page.value++
+
+	try {
+		const fetched = await props.fetcher({
+			page: page.value,
+			query: search.value,
+		})
+
+		for (const item of fetched) items.add(item)
+	} catch (error) {
+		page.value--
+
+		errorTimeout = setTimeout(() => {
+			errorTimeout = null
+		}, 5000)
+
+		throw error
+	}
+})
+
+const searchUpdated = debounce(function searchUpdated() {
+	page.value = 0
+	items.clear()
+
+	if (errorTimeout) {
+		clearTimeout(errorTimeout)
+		errorTimeout = null
+	}
+
+	return fetch.trigger()
+}, 500)
+
+const onNextPage = debounce(function onNextPage(percent: number) {
+	if (fetch.pending) return
+	else if (percent > 70) return fetch.trigger()
+}, 250)
+
+onBeforeMount(fetch.trigger)
+watch(search, searchUpdated)
 </script>
 
 <template>
@@ -53,19 +121,28 @@ const search = computed<string>({
 			}"
 		/>
 
-		<div class="items">
-			<ConstructLink
-				v-for="item of items"
-				:key="item.id"
-				:to="{
-					path: `/${props.name}/${item.id}`,
-					query: route.query,
-				}"
-				class="item"
+		<ConstructScrollNotifier
+			@scrolled="onNextPage"
+			v-slot="{ onScroll }"
+		>
+			<div
+				class="items"
+				@scroll.self="onScroll"
+				@wheel.self="onScroll"
 			>
-				{{ item.title }}
-			</ConstructLink>
-		</div>
+				<ConstructLink
+					v-for="item of items"
+					:key="item.id"
+					:to="{
+						path: `/${props.name}/${item.id}`,
+						query: route.query,
+					}"
+					class="item"
+				>
+					{{ item.title }}
+				</ConstructLink>
+			</div>
+		</ConstructScrollNotifier>
 	</aside>
 </template>
 

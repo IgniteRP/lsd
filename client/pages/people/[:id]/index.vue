@@ -20,6 +20,8 @@ const router = useRouter()
 
 			<PersonActions @removed="router.push('/people')" />
 		</header>
+
+		<PersonReferences />
 	</ConstructPage>
 </template>
 
